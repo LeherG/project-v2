@@ -1,45 +1,5 @@
-# Welcome to your Convex + React (Vite) + Convex Auth app
+From college students to industry leaders, most women in tech share the isolating experience of being the first or only woman in the room. In these spaces, there's often an unspoken feeling that we have to be twice as good to be seen as half as competent. Every technical contribution feels like it's being scrutinized more carefully, and it isn't enough to just be average. That feels like failure, and unfortunately, it might confirm someone's biases.
 
-This is a [Convex](https://convex.dev/) project created with [`npm create convex`](https://www.npmjs.com/package/create-convex).
+Women leave tech at a rate 45% higher than men, with 56% exiting the industry 10-20 years into their careers. Lack of career growth, poor management, and the absence of mentorship are cited as major factors. We built SheConnects to break that cycle by creating a space where women can find mentors who've walked the path before them, connect with peers facing similar challenges, and build the support network that the tech industry has failed to provide. Because no one should have to navigate this journey alone.
 
-After the initial setup (<2 minutes) you'll have a working full-stack app using:
-
-- Convex as your backend (database, server logic)
-- [React](https://react.dev/) as your frontend (web page interactivity)
-- [Vite](https://vitest.dev/) for optimized web hosting
-- [Tailwind](https://tailwindcss.com/) for building great looking UI
-- [Convex Auth](https://labs.convex.dev/auth) for authentication
-
-## Get started
-
-If you just cloned this codebase and didn't use `npm create convex`, run:
-
-```
-npm install
-npm run dev
-```
-
-If you're reading this README on GitHub and want to use this template, run:
-
-```
-npm create convex@latest -- -t react-vite-convexauth
-```
-
-For more information on how to configure Convex Auth, check out the [Convex Auth docs](https://labs.convex.dev/auth/).
-
-For more examples of different Convex Auth flows, check out this [example repo](https://www.convex.dev/templates/convex-auth).
-
-## Learn more
-
-To learn more about developing your project with Convex, check out:
-
-- The [Tour of Convex](https://docs.convex.dev/get-started) for a thorough introduction to Convex principles.
-- The rest of [Convex docs](https://docs.convex.dev/) to learn about all Convex features.
-- [Stack](https://stack.convex.dev/) for in-depth articles on advanced topics.
-
-## Join the community
-
-Join thousands of developers building full-stack apps with Convex:
-
-- Join the [Convex Discord community](https://convex.dev/community) to get help in real-time.
-- Follow [Convex on GitHub](https://github.com/get-convex/), star and contribute to the open-source implementation of Convex.
+Our platform connects women already in the industry who are looking to mentor other women in various stages of their career to women who want to better navigate male-dominated spaces while advancing their own career with the help of a more experienced perspective. On SheConnects, users have their own profile with their contact info, skills, external interests, and a bio; with this, they can browse through and connect with other mentors/mentees as well as make community posts that all users can see and respond publicly to. This platform facilitates the growth of women’s careers and skills in spaces where they are not always welcomed, providing invaluable opportunities and helping establish a deeper sense of unity.
