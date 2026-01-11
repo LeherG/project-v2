@@ -1,12 +1,8 @@
-//WORKS!!!!!!
 
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 
-// The schema is normally optional, but Convex Auth
-// requires indexes defined on `authTables`.
-// The schema provides more precise TypeScript types.
 export default defineSchema({
   ...authTables,
   numbers: defineTable({
@@ -20,6 +16,7 @@ export default defineSchema({
 
   profiles: defineTable({
     userId: v.id("users"),
+    name: v.optional(v.string()),
     role: v.union(v.literal("mentor"), v.literal("mentee"), v.literal("both")),
     bio: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
@@ -47,4 +44,13 @@ export default defineSchema({
   })
     .index("by_mentor", ["mentorId"])
     .index("by_mentee", ["menteeId"]),
+
+  comments: defineTable({
+    postId: v.id("posts"),       // link to the post
+    author: v.id("users"),       // link to the user
+    body: v.string(),            // the comment text
+  })
+    .index("by_post", ["postId"]) // so we can query comments by post
+    .index("by_author", ["author"]), // optional if you want to query user comments
+
 });

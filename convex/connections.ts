@@ -174,11 +174,12 @@ export const respondToRequest = mutation({
         .query("profiles")
         .withIndex("by_user", (q) => q.eq("userId", request.fromUserId))
         .first();
-      const toProfile = await ctx.db
-        .query("profiles")
-        .withIndex("by_user", (q) => q.eq("userId", request.toUserId))
-        .first();
+      // const toProfile = await ctx.db
+      //   .query("profiles")
+      //   .withIndex("by_user", (q) => q.eq("userId", request.toUserId))
+      //   .first();
 
+      // console.log(toProfile);
       let mentorId: Id<"users">;
       let menteeId: Id<"users">;
 
