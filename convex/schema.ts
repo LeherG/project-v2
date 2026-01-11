@@ -10,4 +10,9 @@ export default defineSchema({
   numbers: defineTable({
     value: v.number(),
   }),
+  posts: defineTable({
+    title: v.string(),
+    body: v.string(),
+    author: v.id("users"),
+  })
 });

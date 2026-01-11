@@ -36,6 +36,7 @@ export default function App() {
 function SignOutButton() {
   const { isAuthenticated } = useConvexAuth();
   const { signOut } = useAuthActions();
+
   return (
     <>
       {isAuthenticated && (
@@ -117,6 +118,8 @@ function Content() {
       count: 10,
     }) ?? {};
   const addNumber = useMutation(api.myFunctions.addNumber);
+  const addPost = useMutation(api.myFunctions.addPost);
+  () => addPost({ title: "", body: ""})
 
   if (viewer === undefined || numbers === undefined) {
     return (
@@ -148,6 +151,16 @@ function Content() {
         {numbers?.length === 0
           ? "Click the button!"
           : (numbers?.join(", ") ?? "...")}
+      </p>
+      <p>
+        <button
+          className="bg-dark dark:bg-light text-light dark:text-dark text-sm px-4 py-2 rounded-md border-2"
+          onClick={() => {
+            void addPost({ title: "Hello", body: "World" });
+          }}
+        >
+          Add post
+        </button>
       </p>
       <p>
         Edit{" "}

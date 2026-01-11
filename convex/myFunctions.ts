@@ -52,6 +52,18 @@ export const addNumber = mutation({
   },
 });
 
+export const addPost = mutation({
+  args: {
+    title: v.string(),
+    body: v.string()
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId == null) return;
+    await ctx.db.insert("posts", { author: userId, title: args.title, body: args.body });
+  }
+})
+
 // You can fetch data from and send data to third-party APIs via an action:
 export const myAction = action({
   // Validators for arguments.
