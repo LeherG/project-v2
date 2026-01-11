@@ -20,7 +20,7 @@ export default function App() {
       </header>
       <main className="p-8 flex flex-col gap-16">
         <h1 className="text-4xl font-bold text-center">
-          Convex + React + Convex Auth
+          SBHacks Proj Name...
         </h1>
         <Authenticated>
           <Content />
@@ -117,8 +117,13 @@ function Content() {
     useQuery(api.myFunctions.listNumbers, {
       count: 10,
     }) ?? {};
-  const addNumber = useMutation(api.myFunctions.addNumber);
+  // const addNumber = useMutation(api.myFunctions.addNumber);
   const addPost = useMutation(api.myFunctions.addPost);
+  const posts = useQuery(api.myFunctions.viewPosts);
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [showPostFields, setShowPostFields] = useState(false);
+
   () => addPost({ title: "", body: ""})
 
   if (viewer === undefined || numbers === undefined) {
@@ -132,11 +137,10 @@ function Content() {
   return (
     <div className="flex flex-col gap-8 max-w-lg mx-auto">
       <p>Welcome {viewer ?? "Anonymous"}!</p>
-      <p>
-        Click the button below and open this page in another window - this data
-        is persisted in the Convex cloud database!
-      </p>
-      <p>
+      {/* <p>
+        Click the button below to add a post!
+      </p> */}
+      {/* <p>
         <button
           className="bg-dark dark:bg-light text-light dark:text-dark text-sm px-4 py-2 rounded-md border-2"
           onClick={() => {
@@ -151,17 +155,135 @@ function Content() {
         {numbers?.length === 0
           ? "Click the button!"
           : (numbers?.join(", ") ?? "...")}
-      </p>
-      <p>
-        <button
-          className="bg-dark dark:bg-light text-light dark:text-dark text-sm px-4 py-2 rounded-md border-2"
-          onClick={() => {
-            void addPost({ title: "Hello", body: "World" });
-          }}
-        >
-          Add post
-        </button>
-      </p>
+      </p> */}
+ <div className="flex flex-col gap-4">
+  {/* Toggle button */}
+  <button
+    className="self-start px-6 py-3 rounded-xl font-semibold
+               bg-indigo-600 text-white
+               hover:bg-indigo-700 active:scale-95
+               transition transform shadow-md"
+    onClick={() => setShowPostFields(!showPostFields)}
+  >
+    {showPostFields ? "Cancel" : "Add a post"}
+  </button>
+
+  {/* Show these only if showPostFields is true */}
+  {showPostFields && (
+    <div className="flex flex-col gap-4 mt-4">
+      <input
+        className="postFields w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 
+                   rounded-xl px-4 py-3 border border-slate-300 dark:border-slate-700
+                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                   transition"
+        type="text"
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+
+      <textarea
+        className="postFields w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100
+                   rounded-xl px-4 py-3 border border-slate-300 dark:border-slate-700
+                   focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
+                   transition resize-none h-32"
+        placeholder="Write your post..."
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+      />
+
+      <button
+        className="self-end px-6 py-3 rounded-xl font-semibold
+                   bg-indigo-600 text-white
+                   hover:bg-indigo-700 active:scale-95
+                   transition transform shadow-md
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={!title.trim() || !body.trim()}
+        onClick={async () => {
+          await addPost({ title, body });
+          setTitle("");
+          setBody("");
+          setShowPostFields(false); // hide fields after posting
+        }}
+      >
+        Publish post
+      </button>
+    </div>
+    )}
+    </div>
+
+    
+
+
+      <div className="flex flex-col gap-4 mt-8">
+        <h2 className="text-xl font-bold">Posts</h2>
+
+        {/* {posts.length === 0 ? (
+          <p>No posts yet.</p>
+        ) : (
+          posts.map((post) => (
+            <div
+              key={post.id}
+              className="postDiv border-2 border-slate-200 dark:border-slate-800 rounded-md p-4"
+            >
+              
+              <h3 className="font-semibold">{post.title}</h3>
+              <p className="text-sm mt-1 whitespace-pre-wrap">{post.body}</p>
+              <p className="text-xs text-slate-500 mt-2">
+                Posted by {post.authorEmail ?? "Unknown"}
+              </p>
+            </div>
+          ))
+        )} */}
+        {posts.length === 0 ? (
+  <p>No posts yet.</p>
+) : (
+  posts.map((post) => (
+    <div
+      key={post.id}
+      className="postDiv border-2 border-slate-200 dark:border-slate-800 rounded-md p-4 flex gap-4 "
+    >
+      {/* Placeholder profile picture */}
+      <img
+        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+          post.authorDisplayName ?? post.authorEmail ?? "?"
+        )}&background=7c3aed&color=fff&size=64`}
+        alt="User avatar"
+        className="w-12 h-12 rounded-full object-cover"
+      />
+
+      <div className="flex flex-col w-full">
+        {/* Name + email */}
+        <div className="flex items-center gap-2">
+          <a
+            href={`/profile/${post.authorId}`}
+            className="font-semibold hover:underline text-indigo-600 dark:text-indigo-300"
+          >
+            {post.authorDisplayName ?? post.authorEmail ?? "Unknown"}
+          </a>
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            @{post.authorEmail?.split("@")[0] ?? "unknown"}
+          </span>
+        </div>
+
+        {/* Post title */}
+        {post.title && <h3 className="font-semibold mt-1">{post.title}</h3>}
+
+        {/* Post body */}
+        <p className="text-sm mt-1 whitespace-pre-wrap">{post.body}</p>
+
+        {/* Timestamp */}
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+          {new Date(post.createdAt).toLocaleString()}
+        </p>
+      </div>
+    </div>
+  ))
+)}
+
+      </div>
+
+ 
       <p>
         Edit{" "}
         <code className="text-sm font-bold font-mono bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded-md">

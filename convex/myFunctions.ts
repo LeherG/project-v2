@@ -64,6 +64,30 @@ export const addPost = mutation({
   }
 })
 
+export const viewPosts = query({
+  args: {},
+  handler: async (ctx) => {
+    const posts = await ctx.db
+      .query("posts")
+      .order("desc")
+      .take(50);
+
+    return await Promise.all(
+      posts.map(async (post) => {
+        const author = await ctx.db.get("users", post.author);
+        return {
+          id: post._id,
+          title: post.title,
+          body: post.body,
+          authorEmail: author?.email ?? null,
+          createdAt: post._creationTime,
+        };
+      })
+    );
+  },
+});
+
+
 // You can fetch data from and send data to third-party APIs via an action:
 export const myAction = action({
   // Validators for arguments.
