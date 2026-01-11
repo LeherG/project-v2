@@ -315,14 +315,206 @@ function CommentSection({ postId }: { postId: string }) {
 function ProfilePage() {
   const profile = useQuery(api.connections.getMyProfile);
   const { viewer } = useQuery(api.myFunctions.listNumbers, { count: 10 }) ?? {};
+  const upsertProfile = useMutation(api.connections.upsertProfile);
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [role, setRole] = useState<"mentor" | "mentee" | "both">("mentee");
+  const [bio, setBio] = useState("");
+  const [skillsInput, setSkillsInput] = useState("");
+  const [interestsInput, setInterestsInput] = useState("");
+
+  // Initialize form when profile loads
+  if (profile && !isEditing) {
+    if (bio === "" && profile.bio) {
+      setBio(profile.bio);
+      setSkillsInput(profile.skills?.join(", ") || "");
+      setInterestsInput(profile.interests?.join(", ") || "");
+      setRole(profile.role);
+    }
+  }
 
   if (profile === undefined || viewer === undefined) {
     return <div className="text-center p-8">Loading profile...</div>;
   }
 
+  const handleSave = async () => {
+    try {
+      await upsertProfile({
+        role,
+        bio: bio || undefined,
+        skills: skillsInput
+          ? skillsInput.split(",").map((s) => s.trim()).filter(Boolean)
+          : undefined,
+        interests: interestsInput
+          ? interestsInput.split(",").map((s) => s.trim()).filter(Boolean)
+          : undefined,
+      });
+      setIsEditing(false);
+      alert("Profile updated!");
+    } catch (error: any) {
+      alert(error.message || "Failed to update profile");
+    }
+  };
+
+  // If no profile exists, show setup form
+  if (!profile) {
+    return (
+      <div className="max-w-2x1 mx-auto">
+        <h2 className="text-3xl font-bold mb-6">Set Up Your Profile</h2>
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold mb-2">Role</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as "mentor" | "mentee" | "both")}
+                className="w-full p-3 border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="mentor">Mentor</option>
+                <option value="mentee">Mentee</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">Bio</label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell others about yourself..."
+                className="w-full p-3 border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Skills (comma-separated)
+              </label>
+              <input
+                type="text"
+                value={skillsInput}
+                onChange={(e) => setSkillsInput(e.target.value)}
+                placeholder="e.g. JavaScript, React, Node.js"
+                className="w-full p-3 border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Interests (comma-separated)
+              </label>
+              <input
+                type="text"
+                value={interestsInput}
+                onChange={(e) => setInterestsInput(e.target.value)}
+                placeholder="e.g. Web Development, AI, Mobile Apps"
+                className="w-full p-3 border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <button
+              onClick={handleSave}
+              className="w-full px-6 py-3 rounded-xl font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition"
+            >
+              Create Profile
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If editing, show edit form
+  if (isEditing) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold">Edit Profile</h2>
+          <button
+            onClick={() => setIsEditing(false)}
+            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+          >
+            Cancel
+          </button>
+        </div>
+
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold mb-2">Role</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as "mentor" | "mentee" | "both")}
+                className="w-full p-3 border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="mentor">Mentor</option>
+                <option value="mentee">Mentee</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">Bio</label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell others about yourself..."
+                className="w-full p-3 border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Skills (comma-separated)
+              </label>
+              <input
+                type="text"
+                value={skillsInput}
+                onChange={(e) => setSkillsInput(e.target.value)}
+                placeholder="e.g. JavaScript, React, Node.js"
+                className="w-full p-3 border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Interests (comma-separated)
+              </label>
+              <input
+                type="text"
+                value={interestsInput}
+                onChange={(e) => setInterestsInput(e.target.value)}
+                placeholder="e.g. Web Development, AI, Mobile Apps"
+                className="w-full p-3 border rounded-xl bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <button
+              onClick={handleSave}
+              className="w-full px-6 py-3 rounded-xl font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Display mode
   return (
     <div className="max-w-2xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6">My Profile</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-3xl font-bold">My Profile</h2>
+        <button
+          onClick={() => setIsEditing(true)}
+          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition"
+        >
+          Edit Profile
+        </button>
+      </div>
 
       <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 mb-6">
         <div className="flex items-center gap-4 mb-4">
@@ -335,22 +527,20 @@ function ProfilePage() {
           />
           <div>
             <h3 className="text-2xl font-bold">{viewer}</h3>
-            {profile && (
-              <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 rounded-full text-sm font-semibold capitalize mt-2">
-                {profile.role}
-              </span>
-            )}
+            <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 rounded-full text-sm font-semibold capitalize mt-2">
+              {profile.role}
+            </span>
           </div>
         </div>
 
-        {profile?.bio && (
+        {profile.bio && (
           <div className="mb-4">
             <h4 className="font-semibold text-sm text-slate-600 dark:text-slate-400 mb-1">Bio</h4>
             <p className="text-slate-800 dark:text-slate-200">{profile.bio}</p>
           </div>
         )}
 
-        {profile?.skills && profile.skills.length > 0 && (
+        {profile.skills && profile.skills.length > 0 && (
           <div className="mb-4">
             <h4 className="font-semibold text-sm text-slate-600 dark:text-slate-400 mb-2">Skills</h4>
             <div className="flex flex-wrap gap-2">
@@ -366,7 +556,7 @@ function ProfilePage() {
           </div>
         )}
 
-        {profile?.interests && profile.interests.length > 0 && (
+        {profile.interests && profile.interests.length > 0 && (
           <div>
             <h4 className="font-semibold text-sm text-slate-600 dark:text-slate-400 mb-2">Interests</h4>
             <div className="flex flex-wrap gap-2">
@@ -382,14 +572,6 @@ function ProfilePage() {
           </div>
         )}
       </div>
-
-      {!profile && (
-        <div className="text-center p-8 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
-          <p className="text-yellow-800 dark:text-yellow-200">
-            You haven't set up your profile yet. Visit the Connections tab to get started!
-          </p>
-        </div>
-      )}
     </div>
   );
 }

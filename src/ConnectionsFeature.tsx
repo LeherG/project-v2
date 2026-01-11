@@ -1,106 +1,60 @@
+// src/ConnectionsFeature.tsx
+// Updated version without the Profile Editor tab
+
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useState } from "react";
 
 export default function ConnectionsFeature() {
   const [activeTab, setActiveTab] = useState("browse");
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Mentor-Mentee Connections</h1>
-      
-      {!selectedRole ? (
-        <RoleSelector onRoleSelect={setSelectedRole} />
-      ) : (
-        <>
-          <div className="mb-6 flex gap-2 border-b">
-            <TabButton
-              active={activeTab === "browse"}
-              onClick={() => setActiveTab("browse")}
-            >
-              Browse {selectedRole === "mentor" ? "Mentees" : "Mentors"}
-            </TabButton>
-            <TabButton
-              active={activeTab === "requests"}
-              onClick={() => setActiveTab("requests")}
-            >
-              Requests
-            </TabButton>
-            <TabButton
-              active={activeTab === "connections"}
-              onClick={() => setActiveTab("connections")}
-            >
-              My Connections
-            </TabButton>
-            <TabButton
-              active={activeTab === "profile"}
-              onClick={() => setActiveTab("profile")}
-            >
-              My Profile
-            </TabButton>
-          </div>
-
-          {activeTab === "browse" && (
-            <BrowseUsers lookingFor={selectedRole === "mentor" ? "mentees" : "mentors"} />
-          )}
-          {activeTab === "requests" && <PendingRequests />}
-          {activeTab === "connections" && <MyConnections />}
-          {activeTab === "profile" && <ProfileEditor currentRole={selectedRole} />}
-        </>
-      )}
-    </div>
-  );
-}
-
-function RoleSelector({ onRoleSelect }: { onRoleSelect: (role: string) => void }) {
   const profile = useQuery(api.connections.getMyProfile);
-  const upsertProfile = useMutation(api.connections.upsertProfile);
 
+  // If user hasn't set up profile, prompt them
   if (profile === undefined) {
     return <div className="text-center p-8">Loading...</div>;
   }
 
-  if (profile) {
-    onRoleSelect(profile.role);
-    return null;
+  if (!profile) {
+    return (
+      <div className="max-w-md mx-auto mt-16 p-8 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl text-center">
+        <h2 className="text-2xl font-bold mb-4">Set Up Your Profile First</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-6">
+          Before you can browse connections, please set up your profile in the "My Profile" tab.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-md mx-auto p-8 bg-slate-100 dark:bg-slate-800 rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Choose Your Role</h2>
-      <p className="mb-6 text-slate-600 dark:text-slate-400">
-        Are you looking to mentor others, find a mentor, or both?
-      </p>
-      <div className="flex flex-col gap-3">
-        <button
-          onClick={() => {
-            void upsertProfile({ role: "mentor" });
-            onRoleSelect("mentor");
-          }}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg"
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Mentor-Mentee Connections</h1>
+      
+      <div className="mb-6 flex gap-2 border-b">
+        <TabButton
+          active={activeTab === "browse"}
+          onClick={() => setActiveTab("browse")}
         >
-          I want to be a Mentor
-        </button>
-        <button
-          onClick={() => {
-            void upsertProfile({ role: "mentee" });
-            onRoleSelect("mentee");
-          }}
-          className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg"
+          Browse {profile.role === "mentor" ? "Mentees" : "Mentors"}
+        </TabButton>
+        <TabButton
+          active={activeTab === "requests"}
+          onClick={() => setActiveTab("requests")}
         >
-          I'm looking for a Mentor
-        </button>
-        <button
-          onClick={() => {
-            void upsertProfile({ role: "both" });
-            onRoleSelect("both");
-          }}
-          className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg"
+          Requests
+        </TabButton>
+        <TabButton
+          active={activeTab === "connections"}
+          onClick={() => setActiveTab("connections")}
         >
-          Both - I want to mentor and be mentored
-        </button>
+          My Connections
+        </TabButton>
       </div>
+
+      {activeTab === "browse" && (
+        <BrowseUsers lookingFor={profile.role === "mentor" ? "mentees" : "mentors"} />
+      )}
+      {activeTab === "requests" && <PendingRequests />}
+      {activeTab === "connections" && <MyConnections />}
     </div>
   );
 }
@@ -365,107 +319,6 @@ function ConnectionCard({ user }: { user: any }) {
           Interests: {user.interests.join(", ")}
         </div>
       )}
-    </div>
-  );
-}
-
-function ProfileEditor({ currentRole }: { currentRole: string }) {
-  const profile = useQuery(api.connections.getMyProfile);
-  const upsertProfile = useMutation(api.connections.upsertProfile);
-
-  const [role, setRole] = useState(currentRole);
-  const [bio, setBio] = useState("");
-  const [skillsInput, setSkillsInput] = useState("");
-  const [interestsInput, setInterestsInput] = useState("");
-
-  // Initialize form when profile loads
-  if (profile && bio === "" && profile.bio) {
-    setBio(profile.bio);
-    setSkillsInput(profile.skills?.join(", ") || "");
-    setInterestsInput(profile.interests?.join(", ") || "");
-    setRole(profile.role);
-  }
-
-  const handleSave = async () => {
-    try {
-      await upsertProfile({
-        role: role as "mentor" | "mentee" | "both",
-        bio: bio || undefined,
-        skills: skillsInput
-          ? skillsInput.split(",").map((s) => s.trim()).filter(Boolean)
-          : undefined,
-        interests: interestsInput
-          ? interestsInput.split(",").map((s) => s.trim()).filter(Boolean)
-          : undefined,
-      });
-      alert("Profile updated!");
-    } catch (error: any) {
-      alert(error.message || "Failed to update profile");
-    }
-  };
-
-  return (
-    <div className="max-w-2xl">
-      <h2 className="text-2xl font-bold mb-6">Edit Your Profile</h2>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-semibold mb-2">Role</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full p-2 border rounded bg-white dark:bg-slate-800"
-          >
-            <option value="mentor">Mentor</option>
-            <option value="mentee">Mentee</option>
-            <option value="both">Both</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-2">Bio</label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Tell others about yourself..."
-            className="w-full p-2 border rounded bg-white dark:bg-slate-800"
-            rows={4}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Skills (comma-separated)
-          </label>
-          <input
-            type="text"
-            value={skillsInput}
-            onChange={(e) => setSkillsInput(e.target.value)}
-            placeholder="e.g. JavaScript, React, Node.js"
-            className="w-full p-2 border rounded bg-white dark:bg-slate-800"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold mb-2">
-            Interests (comma-separated)
-          </label>
-          <input
-            type="text"
-            value={interestsInput}
-            onChange={(e) => setInterestsInput(e.target.value)}
-            placeholder="e.g. Web Development, AI, Mobile Apps"
-            className="w-full p-2 border rounded bg-white dark:bg-slate-800"
-          />
-        </div>
-
-        <button
-          onClick={handleSave}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg w-full"
-        >
-          Save Profile
-        </button>
-      </div>
     </div>
   );
 }
