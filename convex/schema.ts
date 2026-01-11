@@ -1,3 +1,5 @@
+//WORKS!!!!!!
+
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
@@ -45,4 +47,15 @@ export default defineSchema({
   })
     .index("by_mentor", ["mentorId"])
     .index("by_mentee", ["menteeId"]),
+
+  comments: defineTable({
+    postId: v.id("posts"),       // link to the post
+    author: v.id("users"),       // link to the user
+    body: v.string(),            // the comment text
+  })
+    .index("by_post", ["postId"]) // so we can query comments by post
+    .index("by_author", ["author"]), // optional if you want to query user comments
+
 });
+
+

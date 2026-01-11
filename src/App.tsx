@@ -1,3 +1,5 @@
+//WORKS!!!!!!!!
+
 "use client";
 
 import {
@@ -135,6 +137,7 @@ function CommunityPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [showPostFields, setShowPostFields] = useState(false);
+  const [openComments, setOpenComments] = useState<Record<string, boolean>>({});
 
   if (posts === undefined) {
     return <div className="text-center p-8">Loading posts...</div>;
@@ -234,6 +237,22 @@ function CommunityPage() {
                   {new Date(post.createdAt).toLocaleString()}
                 </p>
               </div>
+              <button
+  className="text-sm text-indigo-600 dark:text-indigo-400 mt-2 self-start"
+  onClick={() =>
+    setOpenComments((prev) => ({
+      ...prev,
+      [post.id]: !prev[post.id],
+    }))
+  }
+>
+  {openComments[post.id] ? "Hide comments" : "Show comments"}
+</button>
+
+{openComments[post.id] && (
+  <CommentSection postId={post.id} />
+)}
+
             </div>
           ))
         )}
@@ -241,6 +260,57 @@ function CommunityPage() {
     </div>
   );
 }
+
+function CommentSection({ postId }: { postId: string }) {
+  const comments = useQuery(api.myFunctions.getComments, {
+    postId: postId as any,
+  });
+  const addComment = useMutation(api.myFunctions.addComment);
+  const [text, setText] = useState("");
+
+  if (comments === undefined) {
+    return <p className="text-sm text-slate-400">Loading comments...</p>;
+  }
+
+  return (
+    <div className="mt-3 pl-4 border-l border-slate-200 dark:border-slate-700">
+      <div className="flex flex-col gap-2">
+        {comments.length === 0 && (
+          <p className="text-sm text-slate-400">No comments yet</p>
+        )}
+
+        {comments.map((c) => (
+          <div key={c.id} className="text-sm">
+            <span className="font-semibold">
+              {c.authorEmail?.split("@")[0] ?? "anon"}:
+            </span>{" "}
+            {c.body}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-2 mt-2">
+        <input
+          className="flex-1 text-sm px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+          placeholder="Write a comment…"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <button
+          className="text-sm px-3 py-1 rounded bg-indigo-600 text-white disabled:opacity-50"
+          disabled={!text.trim()}
+          onClick={async () => {
+            await addComment({ postId: postId as any, body: text });
+            setText("");
+          }}
+        >
+          Post
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 function ProfilePage() {
   const profile = useQuery(api.connections.getMyProfile);

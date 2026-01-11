@@ -1,3 +1,5 @@
+//WORKS!!!!!
+
 import { v } from "convex/values";
 import { query, mutation, action } from "./_generated/server";
 import { api } from "./_generated/api";
@@ -113,5 +115,57 @@ export const myAction = action({
     await ctx.runMutation(api.myFunctions.addNumber, {
       value: args.first,
     });
+  },
+});
+
+
+
+
+
+
+
+
+
+
+
+export const addComment = mutation({
+  args: {
+    postId: v.id("posts"),
+    body: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId == null) return;
+    
+    await ctx.db.insert("comments", {
+      postId: args.postId,
+      author: userId,
+      body: args.body,
+    });
+  },
+});
+
+export const getComments = query({
+  args: {
+    postId: v.id("posts"),
+  },
+  handler: async (ctx, args) => {
+    const comments = await ctx.db
+      .query("comments")
+      .withIndex("by_post", (q) => q.eq("postId", args.postId))
+      .order("asc") // oldest first
+      .collect();
+
+    return await Promise.all(
+      comments.map(async (comment) => {
+        const author = await ctx.db.get("users", comment.author);
+        return {
+          id: comment._id,
+          body: comment.body,
+          authorEmail: author?.email ?? null,
+          createdAt: comment._creationTime,
+        };
+      })
+    );
   },
 });
